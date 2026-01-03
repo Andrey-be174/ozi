@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ozon Bank Final Telegram Fix</title>
+    <style>
+        :root {
+            --bg-color: #0b0e14;
+            --card-bg: #1a1f26;
+            --accent-blue: #005bff;
+            --text-main: #ffffff;
+            --text-secondary: #8a8e94;
+            --green-success: #2ccb5e;
+        }
+
+        /* Общие настройки */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        body { 
+            margin: 0; background-color: #000; 
+            font-family: -apple-system, system-ui, sans-serif; 
+            color: var(--text-main); overflow: hidden; 
+        }
+
+        /* Оболочка */
+        .app-shell { width: 100%; max-width: 414px; height: 100vh; margin: 0 auto; position: relative; }
+
+        /* Экраны */
+        .screen { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            overflow-y: auto; display: none; padding-bottom: 100px;
+            -webkit-overflow-scrolling: touch;
+        }
+        .active-screen { display: block; }
+
+        /* --- ПЕРВЫЙ ЭКРАН (ПОЛНЫЙ) --- */
+        .header {
+            padding: 15px; display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(11, 29, 51, 0.98); backdrop-filter: blur(20px);
+        }
+        .profile-icon { width: 32px; height: 32px; background: #31373e; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .header-center-pill { background: var(--accent-blue); color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; position: absolute; left: 50%; transform: translateX(-50%); }
+
+        .cashback-banner { margin: 10px 16px; padding: 14px 16px; background: var(--card-bg); border-radius: 16px; display: flex; align-items: center; justify-content: space-between; }
+        
+        .balance-card { background: var(--card-bg); border-radius: 20px; padding: 20px; margin: 10px 16px; }
+        .balance-amount { font-size: 32px; font-weight: 700; margin: 10px 0 20px; }
+        
+        .action-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .action-btn { background: #252b34; border-radius: 12px; padding: 14px 5px; text-align: center; font-size: 13px; color: #4da1ff; border: none; cursor: pointer; }
+
+        .atm-banner { margin: 0 16px 25px; padding: 22px; background: var(--accent-blue); border-radius: 22px; color: white; }
+        .white-btn { background: white; color: var(--accent-blue); padding: 14px; border-radius: 14px; text-align: center; font-weight: bold; margin-top: 18px; }
+
+        /* ИСПРАВЛЕННАЯ КНОПКА "ВСЕ" */
+        .all-button {
+            background: none; border: none;
+            color: var(--accent-blue); font-size: 16px; font-weight: 600;
+            padding: 10px 20px; margin-right: -10px;
+            cursor: pointer; z-index: 9999; position: relative;
+        }
+
+        /* Транзакции */
+        .trans-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; }
+        .success-circle { width: 44px; height: 44px; background: var(--green-success); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .checkmark { width: 18px; height: 18px; border: 2.5px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .checkmark::after { content: ''; width: 3px; height: 6px; border: solid white; border-width: 0 2.5px 2.5px 0; transform: rotate(45deg); margin-bottom: 2px; }
+
+        /* Рекомендации */
+        .promo-scroll { display: flex; gap: 12px; overflow-x: auto; padding: 0 16px 20px; scrollbar-width: none; }
+        .promo-card { min-width: 160px; background: var(--card-bg); border-radius: 20px; padding: 18px; }
+        .promo-blue { background: linear-gradient(135deg, #3d5afe, #8c52ff); }
+
+        /* Навигация */
+        .footer-nav { position: absolute; bottom: 0; width: 100%; background: #0b0e14; display: flex; justify-content: space-around; padding: 12px 0 35px 0; border-top: 0.5px solid #222; z-index: 200; }
+        .nav-item { text-align: center; font-size: 11px; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+
+<div class="app-shell">
+    
+    <div id="main-screen" class="screen active-screen" style="background: linear-gradient(to bottom, #111d33 0%, #0b0e14 18%);">
+        
+        <div class="header">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div class="profile-icon">👤</div>
+                <span style="font-size: 15px; font-weight: 500;">Андрей К.</span>
+            </div>
+            <div class="header-center-pill">ozon банк</div>
+            <div style="font-size: 20px;">🔍</div>
+        </div>
+
+        <div class="cashback-banner">
+            <div style="display:flex; align-items:center; gap:12px;"><span>🔥</span><span style="font-size: 14px;">Карта с кешбэком до 25%</span></div>
+            <span>❯</span>
+        </div>
+
+        <div class="balance-card">
+            <div style="color: var(--text-secondary); font-size: 14px;">Основной счёт</div>
+            <div class="balance-amount">3 458 768 ₽</div>
+            <div style="color: var(--accent-blue); font-weight: 600; margin-bottom: 20px;">+ Заказать карту</div>
+            <div class="action-grid">
+                <button class="action-btn">Оплата QR</button>
+                <button class="action-btn">Пополнить</button>
+                <button class="action-btn">Перевести</button>
+            </div>
+        </div>
+
+        <div class="atm-banner">
+            <div style="font-weight: 700; font-size: 17px;">Рядом с Вами открыли банкомат Ozon Банка.</div>
+            <div class="white-btn">Посмотреть на карте</div>
+        </div>
+
+        <div style="padding: 0 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h2 style="font-size: 20px; margin: 0; font-weight: 700;">Последние операции</h2>
+            <button class="all-button" id="all-btn">Все</button>
+        </div>
+
+        <div class="trans-item">
+            <div style="display: flex; gap: 14px; align-items: center;">
+                <div class="success-circle"><div class="checkmark"></div></div>
+                <div><div style="font-weight: 500;">Ирина Владимировна К.</div><div style="color: var(--text-secondary); font-size: 12px;">Пополнения</div></div>
+            </div>
+            <div style="color: var(--green-success); font-weight: 600;">+ 3 000 ₽</div>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="padding: 0 16px; font-size: 20px; margin: 0 0 15px 0; font-weight: 700;">Рекомендуйте Ozon Банк</h2>
+            <div class="promo-scroll">
+                <div class="promo-card promo-blue">
+                    <div style="font-weight: bold; font-size: 15px;">До 3 000 ₽</div>
+                    <div style="font-size: 12px;">за рекомендацию</div>
+                </div>
+                <div class="promo-card">
+                    <div style="font-size: 14px;">Карта Ozon Банка</div>
+                    <div style="color: #4da1ff; margin-top: 10px;">+700 ₽</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="history-screen" class="screen" style="background: #0b0e14;">
+        <div class="header">
+            <div id="back-btn" style="font-size: 24px; color: var(--accent-blue); padding: 10px; cursor: pointer;">←</div>
+            <div style="font-size: 19px; font-weight: 700; position: absolute; left: 50%; transform: translateX(-50%);">История</div>
+            <div style="width: 40px;"></div>
+        </div>
+        <div style="padding: 15px 16px;"><div style="background: #252b34; padding: 10px 18px; border-radius: 25px; display: inline-flex; align-items: center; gap: 10px;">⚙️ Фильтр</div></div>
+        <div style="background: #161b22; padding: 10px 16px; color: var(--text-secondary); font-size: 13px;">31 декабря, ср</div>
+        <div class="trans-item"><div style="display:flex; gap:14px; align-items:center;"><div class="success-circle"><div class="checkmark"></div></div><div><div>Ирина Владимировна К.</div><div style="color:var(--text-secondary); font-size:12px;">Пополнения</div></div></div><div style="color:var(--green-success); font-weight:600;">+ 3 000 ₽</div></div>
+        <div style="background: #161b22; padding: 10px 16px; color: var(--text-secondary); font-size: 13px;">25 декабря, чт</div>
+        <div class="trans-item"><div style="display:flex; gap:14px; align-items:center;"><div class="success-circle"><div class="checkmark"></div></div><div><div>Алексей Сергеевич П.</div><div style="color:var(--text-secondary); font-size:12px;">Пополнения</div></div></div><div style="color:var(--green-success); font-weight:600;">+ 10 000 ₽</div></div>
+    </div>
+
+    <div class="footer-nav">
+        <div class="nav-item" style="color:#005bff">Финансы</div>
+        <div class="nav-item">Платежи</div>
+        <div class="nav-item">Выгода</div>
+        <div class="nav-item">Чат</div>
+        <div class="nav-item">Ещё</div>
+    </div>
+</div>
+
+<script>
+    const allBtn = document.getElementById('all-btn');
+    const backBtn = document.getElementById('back-btn');
+    const mainScreen = document.getElementById('main-screen');
+    const historyScreen = document.getElementById('history-screen');
+
+    function openHistory() {
+        mainScreen.style.display = 'none';
+        historyScreen.style.display = 'block';
+    }
+
+    function closeHistory() {
+        historyScreen.style.display = 'none';
+        mainScreen.style.display = 'block';
+    }
+
+    // Слушаем все типы кликов для максимальной совместимости
+    allBtn.addEventListener('click', openHistory);
+    allBtn.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        openHistory();
+    }, { passive: false });
+
+    backBtn.addEventListener('click', closeHistory);
+    backBtn.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        closeHistory();
+    }, { passive: false });
+</script>
+
+</body>
+</html>
